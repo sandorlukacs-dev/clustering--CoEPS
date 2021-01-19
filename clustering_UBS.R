@@ -9,6 +9,7 @@ setwd("/Users/christian/Documents/Studium/FS 2021/Practitioner Seminar/Data Clus
 
 #Data Preparation
 
+library(corrplot)
 library(cluster)
 library(purrr)
 library(factoextra)
@@ -24,16 +25,14 @@ data_nafix = na_if(data_nafix, 0)
 data_naomit = na.omit(data_nafix)
 
 
-#rownames(data_naomit) = data_naomit$Name
+rownames(data_naomit) = data_naomit$Name
 
 #colnames(data_naomit)
 
 colnum <- as.vector(colnames(data_naomit[3:18]))
 
-data_naomit[colnum]
 
-data_naomit[colnum] <- sapply(data_naomit[colnum],as.numeric)
-sapply(data_naomit, class)
+data_naomit[colnum] <- lapply(data_naomit[colnum], function(x) as.numeric(as.character(x)))
 
 
 #####Set of ratios
@@ -67,6 +66,11 @@ data_naomit$Deposits <- data_naomit$CustomerDeposits / data_naomit$TotalAssetes
 
 data_subset <- data_naomit[19:25]
 data_subset <- scale(data_subset)
+
+# Creating correllation matrix
+matrix <- cor(scale(data_subset))
+corrplot(corr=matrix, method="number", title="Corellation Matrix of Potential Proxies")
+
 #data_subset
 
 data_clustering <- cbind(data_naomit[1],data_subset)
