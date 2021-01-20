@@ -14,12 +14,11 @@ library(dplyr)
 library(dendextend)
 library(tidyverse)
 library(caret)
+library(fpc)
 
-'''
-
-DATA
-
-'''
+#######################
+######## DATA #########
+#######################
 
 # Reading in data
 data <- read.csv('Ready_for_csv_export.csv', sep = ';')
@@ -38,11 +37,10 @@ colnum <- as.vector(colnames(data_naomit[3:18]))
 # Converting to numeric
 data_naomit[colnum] <- lapply(data_naomit[colnum], function(x) as.numeric(as.character(x)))
 
-'''
+#######################
+####### RATIOS ########
+#######################
 
-RATIOS
-
-'''
 # 1. Ratio: Gross Loans (LTA)
 data_naomit$LTA <- data_naomit$Loans / data_naomit$TotalAssetes
 # 2. Ratio: Trade (TTA)
@@ -72,11 +70,17 @@ data_clustering = select(data_naomit, all_of(selected))
 matrix <- cor(scale(data_clustering))
 corrplot(corr=matrix, method="number", title="Corellation Matrix of Potential Proxies")
 
-##CLUSTERING
+###########################
+####### CLUSTERING ########
+###########################
+
+
+# Running clustering for every combination of proxies
 
 container = list()
+ac = c()
 counter = 1
-for (i in 1:8) {
+for (i in 3:(length(selected))) {
   
   combinations = combn(selected,i)
   
@@ -84,18 +88,50 @@ for (i in 1:8) {
     
     
     data_subset = select(data_naomit, combinations[,k])
-    cluster <- (hclust(dist(data_subset, method="euclidean"), method="complete"))
+    cluster <- (agnes(data_subset, method="ward"))
     container[[counter]] <-  cluster
-    
+    ac = append(ac, cluster$ac)
     counter = counter + 1
     
   }
         
 }
 
+# Get the number of best clustering based on AC scor
+max_index = which(ac==max(ac))
+
+#Save best clustering
+best_clustering = container[[max_index]]
+
+#Create clusters
+clust <- cutree(best_clustering, k = 4)
+
+#Plot clusters
+
+pltree(best_clustering, hang=-1, cex = 0.6)
+
+rect.hclust(best_clustering, k = 4, border = 2:10)
+
+fviz_cluster(list(data = best_clustering$data, cluster = clust), labelsize =7)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## hclust, method 'complete'
 d <- dist(data_clustering, method = "euclidean")
-hc1 <- hclust(d, method = "complete" )
+hc1 <- hclust(d, method = "ward.D2" )
 plot(hc1, cex = 0.6, hang = -1)
 
 
