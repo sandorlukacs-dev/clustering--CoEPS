@@ -14,6 +14,7 @@ library(dplyr)
 library(dendextend)
 library(tidyverse)
 library(caret)
+library(plyr)
 library(fpc)
 
 #######################
@@ -69,6 +70,10 @@ data_clustering = select(data, all_of(selected))
 matrix <- cor(scale(data_clustering))
 corrplot(corr=matrix, method="number", title="Corellation Matrix of Potential Proxies")
 
+#!!!SFA Should be excluded
+selected =c("LTA", "IBTA", "TTA", "ILTA", "WDA", "CDA", "IIO")
+data_clustering = select(data, all_of(selected))
+
 ###########################
 ####### CLUSTERING ########
 ###########################
@@ -102,6 +107,7 @@ max_index = which(ac==max(ac))
 
 #Save best clustering
 best_clustering = container[[max_index]]
+used_ratios = colnames(best_clustering$data)
 
 #Create clusters
 clust <- cutree(best_clustering, k = 4)
@@ -116,18 +122,27 @@ fviz_cluster(list(data = best_clustering$data, cluster = clust), labelsize =7)
 
 
 
+results_clustering <- data.frame(
+                                  Name=best_clustering$order.lab, 
+                                  Segment=cutree(best_clustering,4)[best_clustering$order]
+                                  )
+data_clustering$Name <- rownames(data_clustering)
+data_clustering <- data_clustering[order(data_clustering$Name),]
+results_clustering <- results_clustering[order(results_clustering$Name),]
+
+results_clustering = cbind(results_clustering, data_clustering)
+
+selected = append("Segment", used_ratios)
+
+results_clustering = select(results_clustering, all_of(selected))
 
 
+results_clustering["Segment"] <- lapply(results_clustering["Segment"], function(x) as.numeric(x))
 
 
-
-
-
-
-
-
-
-
+Mean.Values <- aggregate(x=results_clustering, by=list(results_clustering$Segment), FUN=mean)
+Mean.Values <- select(Mean.Values, all_of(used_ratios))
+heatmap(as.matrix(Mean.Values))
 
 ## hclust, method 'complete'
 d <- dist(data_clustering, method = "euclidean")
