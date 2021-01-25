@@ -20,14 +20,14 @@ library(clusterSim)
 #######################
 
 # Reading in data
-data <- read.csv('data1.csv', sep = ';')
+data <- read.csv('data2.csv', sep = ';')
 selected =c("Name","LoansAdvances", "LiabilityRepos", "BankDeposits", "LongFunding", "CustomerDeposits", "LiquidAssets", "Loans", "Intangibles", "NetInterestIncome", "OperatingIncome", "Equity", "TotalAssetes")
 data = dplyr::select(data, all_of(selected))
 
 
 
 # Preparing data
-data = na_if(data, "NA")
+data = na_if(data, "n.a.")
 data = na.omit(data)
 
 rownames(data) = data$Name
