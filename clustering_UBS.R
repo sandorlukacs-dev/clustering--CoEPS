@@ -1,9 +1,6 @@
 
 # Clear Environment
 rm(list=ls())
-
-setwd("/Users/christian/Documents/Studium/FS 2021/Practitioner Seminar/Data Clustering")
-
 # Import libra
 
 library(corrplot)
@@ -13,7 +10,6 @@ library(factoextra)
 library(dplyr)
 library(dendextend)
 library(tidyverse)
-library(caret)
 library(plyr)
 library(fpc)
 library(MASS)
@@ -26,7 +22,7 @@ library(clusterSim)
 # Reading in data
 data <- read.csv('data1.csv', sep = ';')
 selected =c("Name","LoansAdvances", "LiabilityRepos", "BankDeposits", "LongFunding", "CustomerDeposits", "LiquidAssets", "Loans", "Intangibles", "NetInterestIncome", "OperatingIncome", "Equity", "TotalAssetes")
-data = select(data, all_of(selected))
+data = dplyr::select(data, all_of(selected))
 
 
 
@@ -67,7 +63,7 @@ data$IIO = data$NetInterestIncome/data$OperatingIncome
 
 #Create data subset
 selected =c("LTA", "IBTA", "TTA", "SFA", "CDA", "IIO")
-data_clustering = select(data, all_of(selected))
+data_clustering = dplyr::select(data, all_of(selected))
 
 # Creating correllation matrix
 matrix <- cor(scale(data_clustering))
@@ -75,7 +71,7 @@ corrplot(corr=matrix, method="number", title="Corellation Matrix of Potential Pr
 
 #!!!SFA Should be excluded
 selected =c("LTA", "IBTA", "TTA", "CDA", "IIO")
-data_clustering = select(data, all_of(selected))
+data_clustering = dplyr::select(data, all_of(selected))
 
 ###########################
 ####### CLUSTERING ########
@@ -94,7 +90,7 @@ for (i in 4:(length(selected))) {
   for (k in 1:ncol(combinations)) {
     
     
-    data_subset = select(data, combinations[,k])
+    data_subset = dplyr::select(data, combinations[,k])
     data_subset = na.omit(data_subset)
     cluster <- (agnes(data_subset, method="ward"))
     container[[counter]] <-  cluster
